@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>WEB API</title>
+    <meta charset="utf-8"/>
+    <link href="Content/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+</head>
+<body>
+<div align="center">
+    <h1>Implementacion de un Servicio con WebAPI</h1>
+</div>
+<div class="container form-inline">
+        <div class="form-group">
+            <label>Nombre:</label>
+            <input type="text" id="nombre" maxlength="20" placeholder="Nombre" required="required" class="form-control"/>
+        </div>
+        <div class="form-group">
+            <label>Apellido:</label>
+            <input type="text" id="apellido" maxlength="20" placeholder="Apellido" required="required" class="form-control"/>
+        </div>
+        <div class="form-group">
+            <label>Dni</label>
+            <input type="number" id="dni" maxlength="8" placeholder="Dni" required="required" class="form-control"/>
+            <!--<small id="emailHelp" class="form-text text-muted">El de tipo numerico y maximo 8.</small>-->
+        </div>
+        <div class="form-group">
+            <label>Telefono</label>
+            <input type="number" id="telefono" maxlength="10" placeholder="Telefono" required="required" class="form-control"/>
+        </div>
+        <input type="button" value="Registrar" onclick="Registrar()" class="btn btn-primary" id="BotonPrincipal"/>
+</div>
+<div class="form-group">
+    <table class="table table-bordered" id="tablaAlumnos">
+        <caption>Tabla de Alumnos</caption>
+        <thead class="thead-default">
+        <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Dni</th>
+            <th>Telefono</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+        </tr>
+        </thead>
+        <tbody id="Alumnos">
+        </tbody>
+    </table>
+</div>
+<script src="Scripts/jquery-3.1.0.js"></script>
+<script src="Scripts/bootstrap.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+<script>
+    BuscarTodos();
+    function Registrar() {
+        var nombre = $('#nombre').val();
+        var apellido = $('#apellido').val();
+        var dni = $('#dni').val();
+        var telefono = $('#telefono').val();
+        var alumno = {
+            Nombre: nombre,
+            Apellido: apellido,
+            Dni: dni,
+            Telefono: telefono
+        };
+        var objetoJson = JSON.stringify(alumno);
+        console.log('Onjeto Json POST : '+objetoJson);
+        $.ajax({
+                url: 'api/Alumno',
+                type: 'POST',
+                //Cache: false,
+                contentType: 'application/json;charset=utf-8',
+                data: objetoJson,
+                dataType: 'json',
+                success: function() {
+                    swal('Registrado Correctamente', "Proceso Satisfactorio", "success");
+                    //location.reload();
+                    limpiarCampos();
+                    BuscarTodos();
+                }
+            })
+            .fail(
+                function (xhr, textStatus, err) {
+                    swal("Oops...", "El servidor esta temporalmente inactivo!", "error");
+                }
+            );
+    }
+    function BuscarTodos() {
+        //$(document).ready(function() {
+        $.ajax({
+            url: 'api/Alumno',
+            type: 'GET',
+            Cache: false,
+            contentType: 'application/json;charset=utf-8',
+            data: '{}',
+            dataType: 'json',
+            success: function (response) {
+                $('#tablaAlumnos tbody').empty();
+                $.each(response,
+                    function (key, item) {
+                        $('#tablaAlumnos tbody').append('' +
+                            '<tr>' +
+                            '<th>' + item.Id + '</th>' +
+                            '<td>' + item.Nombre + '</td>' +
+                            '<td>' + item.Apellido + '</td>' +
+                            '<td>' + item.Dni + '</td>' +
+                            '<td>' + item.Telefono + '</td>' +
+                            '<td>' + '<buttton onclick="Buscar(' + item.Id + ')" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-pencil"></span></button>' + '</td>' +
+                            '<td>' + '<buttton onclick="Eliminar(' + item.Id + ')" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button>' + '</td>' +
+                            '<tr>');
+                    });
+            }
+        });
+        //$.getJSON('api/Alumno')
+        //    .done(function(data) {
+        //        $.each(data,
+        //            function(key, item) {
+        //                $('#tablaAlumnos tbody').append('' +
+        //                    '<tr>' +
+        //                    '<th>' + item.Id + '</th>' +
+        //                    '<td>' + item.Nombre + '</td>' +
+        //                    '<td>' + item.Apellido + '</td>' + 
+        //                    '<td>' + item.Dni + '</td>' +
+        //                    '<td>' + item.Telefono + '</td>' + 
+        //                    '<tr>');
+        //            });
+        //    });
+        //});
+    }
+    function Buscar(codigoAlumno) {
+        $('#BotonPrincipal').val('Editar');
+        $('#BotonPrincipal').onclick = 'Editar('+codigoAlumno+')';
+        var url = 'api/Alumno/' + codigoAlumno;
+        $.getJSON(url)
+            .done(function (data) {
+                $('#nombre').val(data.Nombre);
+                $('#apellido').val(data.Apellido);
+                $('#dni').val(data.Dni);
+                $('#telefono').val(data.Telefono);
+            })
+            .fail({
+            
+            });
+    }
+    function Editar(codigoAlumno) {
+        //$('#BotonPrincipal').onclick = 'Registrar()';
+        var nombre = $('#nombre').val();
+        var apellido = $('#apellido').val();
+        var dni = $('#dni').val();
+        var telefono = $('#telefono').val();
+        var alumno = {
+            Nombre: nombre,
+            Apellido: apellido,
+            Dni: dni,
+            Telefono:telefono
+        };
+        var objetoJSON = JSON.stringify(alumno);
+        $.ajax({
+            url: 'api/Alumno/' + codigoAlumno,
+            type: 'PUT',
+            Cache:false,
+            contentType: 'application/json;charset=utf-8',
+            data: objetoJSON,
+            dataType: 'json',
+            success: function() {
+                limpiarCampos();
+                BuscarTodos();
+            }
+        });
+    }
+    function Eliminar(codigoAlumno) {
+        swal({
+            title: 'Esta seguro de eliminar el registro?',
+            text: 'Se espera su confirmación para eliminar el registro.',
+            type: 'warning',
+            showCancelButton: true,
+            closeOnConfirm: false,
+            confirmButtonText: "Si, eliminarlo!",
+            confirmButtonColor: "#ec6c62"
+        }, function() {
+            $.ajax({
+                url: 'api/Alumno/' + codigoAlumno,
+                type: 'DELETE',
+                //Cache: false,
+                //contentType: 'application/json;charset=utf-8',
+                //data: codigoAlumno,
+                //dataType: 'json',
+                success: function () {
+                    swal("Eliminado!", "El registro a sido eliminado Satisfactoriamente!", "success");
+                    limpiarCampos();
+                    BuscarTodos();
+                }
+            }).fail(function (xhr, textStatus, err)
+            {
+                swal("Oops", "El servidor esta temporalmente inactivo!", "error");
+            });
+        });
+    }
+    function limpiarCampos() {
+        $('#nombre').val('');
+        $('#apellido').val('');
+        $('#dni').val('');
+        $('#telefono').val('');
+        $('#nombre').focus();
+    }
+</script>
+</body>
+</html>
