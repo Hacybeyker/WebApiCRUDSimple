@@ -130,7 +130,7 @@
     }
     function Buscar(codigoAlumno) {
         $('#BotonPrincipal').val('Editar');
-        $('#BotonPrincipal').onclick = 'Editar('+codigoAlumno+')';
+        $('#BotonPrincipal').attr("onclick", "Editar("+codigoAlumno+")");
         var url = 'api/Alumno/' + codigoAlumno;
         $.getJSON(url)
             .done(function (data) {
@@ -144,12 +144,14 @@
             });
     }
     function Editar(codigoAlumno) {
-        //$('#BotonPrincipal').onclick = 'Registrar()';
+        $('#BotonPrincipal').val('Registrar');
+        $('#BotonPrincipal').attr("onclick", "Registrar()");
         var nombre = $('#nombre').val();
         var apellido = $('#apellido').val();
         var dni = $('#dni').val();
         var telefono = $('#telefono').val();
         var alumno = {
+            Id:codigoAlumno,
             Nombre: nombre,
             Apellido: apellido,
             Dni: dni,
@@ -163,10 +165,13 @@
             contentType: 'application/json;charset=utf-8',
             data: objetoJSON,
             dataType: 'json',
-            success: function() {
+            success: function () {
+                swal('Editado Correctamente', "Proceso Satisfactorio", "success");
                 limpiarCampos();
                 BuscarTodos();
             }
+        }).fail(function (xhr, textStatus, err) {
+            swal("Oops...", "El servidor esta temporalmente inactivo!", "error");
         });
     }
     function Eliminar(codigoAlumno) {
